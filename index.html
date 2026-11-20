@@ -316,22 +316,86 @@
         .hub-row{gap:14px; padding:22px 4px}
         .hub-row .num{display:none}
       }
-      @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} .hub-row .arrow{transition:none} body, header.site-head, footer.site-foot, .card, .note, .link-item{transition:none} }
+      /* Slim top bar: CTA + toggle. Nav stays visually the same when open. */
+      .slim-bar-in{
+        max-width:1200px; margin:0 auto; padding:6px 24px; min-height:52px;
+        display:flex; align-items:center; gap:12px;
+      }
+      .slim-bar .wordmark{font-size:1.22rem}
+      .slim-bar .wordmark small{margin-top:2px}
+      .slim-cta{
+        margin-left:auto;
+        background:var(--acc); color:var(--acc-ink); text-decoration:none;
+        font-weight:800; font-size:.92rem; letter-spacing:.02em;
+        padding:8px 16px; border-radius:4px; min-height:40px;
+        display:inline-flex; align-items:center; white-space:nowrap;
+      }
+      .slim-cta:hover{filter:brightness(1.12)}
+      .slim-cta:focus-visible, .nav-toggle:focus-visible{
+        outline:2px solid var(--cyan); outline-offset:2px;
+      }
+      .nav-toggle{
+        appearance:none; background:none; border:0; cursor:pointer;
+        color:var(--ink); flex:0 0 44px; width:44px; height:44px;
+        display:inline-flex; align-items:center; justify-content:center;
+        padding:0; border-radius:4px;
+      }
+      .nav-toggle:hover{color:var(--cyan)}
+      .nav-toggle svg{
+        width:22px; height:22px; display:block;
+        transition:transform .28s ease;
+      }
+      .site-head.is-nav-open .nav-toggle svg{transform:rotate(180deg)}
+      .nav-panel{
+        display:grid; grid-template-rows:0fr;
+        transition:grid-template-rows .28s ease;
+        border-top:0 solid var(--line);
+      }
+      .site-head.is-nav-open .nav-panel{
+        grid-template-rows:1fr;
+        border-top-width:1px;
+      }
+      .nav-panel-inner{overflow:hidden}
+      .nav-panel .head-in{min-height:0; padding-top:8px; padding-bottom:10px}
+      .nav-panel nav.main-nav{margin-left:0}
+      @media (min-width:761px){
+        .nav-panel nav.main-nav{justify-content:flex-end; width:100%}
+      }
+      @media (max-width:760px){
+        .slim-bar-in{padding:6px 16px; gap:8px}
+        .slim-cta{font-size:.82rem; padding:8px 12px}
+      }
+
+      @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} .hub-row .arrow, .nav-toggle svg, .nav-panel{transition:none} body, header.site-head, footer.site-foot, .card, .note, .link-item{transition:none} }
     </style>
   </head>
   <body data-page="home">
     <header class="site-head">
-      <div class="head-in">
-        <a class="wordmark" href="#home" data-nav="home">BSD<span>.</span>BOX<small>SWAG COMICS</small></a>
-        <nav class="main-nav" aria-label="Main">
-          <button type="button" data-nav="home" aria-current="page">Home</button>
-          <button type="button" data-nav="shop">Shop</button>
-          <button type="button" data-nav="draconii">Draconii Legends</button>
-          <button type="button" data-nav="btcswag">BtcSwag</button>
-          <button type="button" data-nav="whitepaper">Whitepaper</button>
-          <a class="nav-link" href="https://www.instagram.com/bitswagger_aka_btcswag/links" target="_blank" rel="noopener">All Links</a>
-          <a class="discord-btn" href="https://discord.gg/38AWPRSjf" target="_blank" rel="noopener">Discord</a>
-        </nav>
+      <div class="slim-bar">
+        <div class="slim-bar-in">
+          <a class="wordmark" href="#home" data-nav="home">BSD<span>.</span>BOX<small>SWAG COMICS</small></a>
+          <a class="slim-cta" href="https://draconii.com" target="_blank" rel="noopener">Shop Draconii</a>
+          <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="main-nav-panel" aria-label="Show menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 9l7 7 7-7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="nav-panel" id="main-nav-panel" aria-hidden="true" inert>
+        <div class="nav-panel-inner">
+          <div class="head-in">
+            <nav class="main-nav" aria-label="Main">
+              <button type="button" data-nav="home" aria-current="page">Home</button>
+              <button type="button" data-nav="shop">Shop</button>
+              <button type="button" data-nav="draconii">Draconii Legends</button>
+              <button type="button" data-nav="btcswag">BtcSwag</button>
+              <button type="button" data-nav="whitepaper">Whitepaper</button>
+              <a class="nav-link" href="https://www.instagram.com/bitswagger_aka_btcswag/links" target="_blank" rel="noopener">All Links</a>
+              <a class="discord-btn" href="https://discord.gg/38AWPRSjf" target="_blank" rel="noopener">Discord</a>
+            </nav>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -703,6 +767,31 @@
         });
         window.addEventListener("hashchange", function () { show(location.hash.replace("#", "")); });
         show(location.hash.replace("#", "") || "home");
+
+        /* Slim bar: toggle current nav open/closed. Collapsed by default. */
+        var head = document.querySelector("header.site-head");
+        var toggle = document.querySelector(".nav-toggle");
+        var navPanel = document.getElementById("main-nav-panel");
+        function setNavOpen(open) {
+          head.classList.toggle("is-nav-open", open);
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          toggle.setAttribute("aria-label", open ? "Hide menu" : "Show menu");
+          navPanel.setAttribute("aria-hidden", open ? "false" : "true");
+          if (open) navPanel.removeAttribute("inert");
+          else navPanel.setAttribute("inert", "");
+        }
+        toggle.addEventListener("click", function () {
+          setNavOpen(!head.classList.contains("is-nav-open"));
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && head.classList.contains("is-nav-open")) {
+            setNavOpen(false);
+            toggle.focus();
+          }
+        });
+        document.querySelectorAll("nav.main-nav [data-nav], .slim-bar [data-nav]").forEach(function (el) {
+          el.addEventListener("click", function () { setNavOpen(false); });
+        });
 
         /* Full-size whitepaper viewer - opens inside this page instead of
            linking out to the raw image file, which the preview host
